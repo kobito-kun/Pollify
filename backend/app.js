@@ -19,40 +19,46 @@ const db = new sqlite3.Database('./main.db', sqlite3.OPEN_READWRITE, (err) => {
 });
 
 const emitStatus = (socket, status) => {
-  socket.emit("status", status)
+  socket.emit("status", status);
 };
 
-const emitState = () => {
-  io.emit("state", )
+const emitState = (arg, socket) => {
+  db.get(`SELECT * FROM poll WHERE pollId = ${arg}`, (err, query) => {
+    db.all(`SELECT * FROM vote WHERE pollId = ${arg}`, (err, countRes) => {
+      const typesArray = JSON.parse(query["types"]);
+      const countArray = [...countRes];
+      let countResult = {};
+      typesArray.forEach(y => {
+        const countIndividual = countArray.filter(x => x["title"] === y).length
+        countResult[`${y}`] = countIndividual;
+      })
+      socket.emit("state", countResult);
+    })
+  })
 };
 
-const addCountState = () => {
-  return
-}
 
 const makeTables = () => {
-  db.run(`CREATE TABLE poll(
-    pollId text,
-    vote blob)`)
+  db.run(`CREATE TABLE poll(pollId text, types blob)`)
+  db.run(`CREATE TABLE vote(pollId text, title text)`)
 }
 
-const fetchPoll = (id) => {
-  db.get(`SELECT * FROM poll WHERE pollId = ${id}`, (err, result) => {
-    if(err) return console.error(err);
-    console.log(JSON.parse(result["vote"]))
-  })
+const makePoll = (pollId, types) => {
+  db.run(`INSERT INTO poll(pollId, types) VALUES('${pollId}', '${types}')`)
 }
 
-const makePoll = (pollId, vote) => {
-  db.run(`INSERT INTO poll(pollId, vote) VALUES('${pollId}', '${vote}')`)
+const makeVote = (pollId, title) => {
+  db.run(`INSERT INTO vote(pollId, title) VALUES('${pollId}', '${title}')`)
 }
 
-// Initial State Connection
+// Initial State Connection Sockets
 io.on('connection', (socket) => {
   emitStatus(socket, "connected");
-  socket.on("vote", (arg) => {
-    emitState();
-  });
+  socket.on("pollId", (arg) => {
+    setInterval(() => {
+      emitState(arg, socket);
+    }, 500);
+  })
 });
 
 // Routes
@@ -66,15 +72,41 @@ app.get('/favicon.ico', (req, res) => {
 
 // TESTING
 app.get('/test', (req, res) => {
-  db.all(`SELECT * FROM poll`, (err, result) => {
+  db.all(`SELECT * FROM vote`, (err, result) => {
     res.send(result)
   })
 })
 
-app.get('/:pollId', (req, res) => {
-  const pollId = req.params.pollId;
-  const result = fetchPoll(pollId);
-  res.send(pollId);
+app.post('/api/poll', (req, res) => {
+  const {pollId, types} = req.body;
+  makePoll(pollId, types);
+  res.json({"status": "complete"})
 })
+
+app.put('/api/poll', (req, res) => {
+  const {pollId, title} = req.body;
+  makeVote(pollId, title)
+  res.json({"status" : "success"})
+})
+
+app.get('/api/:pollId', (req, res) => {
+  const pollId = req.params.pollId;
+  db.get(`SELECT * FROM poll WHERE pollId = ${pollId}`, (err, query) => {
+    if(err) return console.error(err);
+    const typesArray = JSON.parse(query["types"]);
+    db.all(`SELECT * FROM vote WHERE pollId = ${pollId}`, (err, countRes) => {
+      const countArray = [...countRes]
+      typesArray.forEach(y => {
+        const countIndividual = countArray.filter(x => x["title"] === y).length
+        query[`${y}`] = countIndividual;
+      })
+      query["types"] = typesArray;
+      res.json(query);
+    })
+  })
+})
+
+
+
 
 http.listen(port, () => console.log("Listening on http://localhost:" + port));
