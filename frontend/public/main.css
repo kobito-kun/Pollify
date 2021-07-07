@@ -1,0 +1,12 @@
+@font-face {
+  font-family: Beneth;
+  src: url(beneth.otf);
+}
+
+html{
+  scroll-behavior: smooth;
+}
+
+.beneth{
+  font-family: Beneth;
+}

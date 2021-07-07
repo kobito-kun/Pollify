@@ -62,6 +62,7 @@ const makeVote = (pollId, title) => {
 
 // Initial State Connection Sockets
 io.on('connection', (socket) => {
+  console.log(socket.id)
   emitStatus(socket, "connected");
   socket.on("pollId", (arg) => {
     setInterval(() => {
@@ -115,7 +116,8 @@ app.get('/api/:pollId', (req, res) => {
   })
 })
 
-
-
+process.on('SIGINT', () => {
+    db.close();
+});
 
 http.listen(port, () => console.log("Listening on http://localhost:" + port));
