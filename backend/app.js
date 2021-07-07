@@ -2,7 +2,12 @@
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
-const io = require('socket.io')(http);
+const io = require('socket.io')(http, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+  });
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const port = process.env.PORT || 5000
@@ -23,16 +28,20 @@ const emitStatus = (socket, status) => {
 };
 
 const emitState = (arg, socket) => {
-  db.get(`SELECT * FROM poll WHERE pollId = ${arg}`, (err, query) => {
-    db.all(`SELECT * FROM vote WHERE pollId = ${arg}`, (err, countRes) => {
-      const typesArray = JSON.parse(query["types"]);
-      const countArray = [...countRes];
-      let countResult = {};
-      typesArray.forEach(y => {
-        const countIndividual = countArray.filter(x => x["title"] === y).length
-        countResult[`${y}`] = countIndividual;
-      })
-      socket.emit("state", countResult);
+  db.get(`SELECT * FROM poll WHERE pollId = '${arg}'`, (err, query) => {
+    db.all(`SELECT * FROM vote WHERE pollId = '${arg}'`, (err, countRes) => {
+      if(countRes.length === 0){
+        socket.emit("state", "none") 
+      }else{
+        const typesArray = query["types"].split(",");
+        const countArray = [...countRes];
+        let countResult = {};
+        typesArray.forEach(y => {
+          const countIndividual = countArray.filter(x => x["title"] === y).length
+          countResult[`${y}`] = countIndividual;
+        })
+        socket.emit("state", countResult);
+      }
     })
   })
 };
@@ -91,10 +100,10 @@ app.put('/api/poll', (req, res) => {
 
 app.get('/api/:pollId', (req, res) => {
   const pollId = req.params.pollId;
-  db.get(`SELECT * FROM poll WHERE pollId = ${pollId}`, (err, query) => {
+  db.get(`SELECT * FROM poll WHERE pollId = '${pollId}'`, (err, query) => {
     if(err) return console.error(err);
-    const typesArray = JSON.parse(query["types"]);
-    db.all(`SELECT * FROM vote WHERE pollId = ${pollId}`, (err, countRes) => {
+    const typesArray = query["types"].split(',');
+    db.all(`SELECT * FROM vote WHERE pollId = '${pollId}'`, (err, countRes) => {
       const countArray = [...countRes]
       typesArray.forEach(y => {
         const countIndividual = countArray.filter(x => x["title"] === y).length
