@@ -20,7 +20,7 @@ function Form() {
       "types": types
     };
     if(currentPollValues.length >= 2){
-      axios.post("http://localhost:5000/api/poll", object).then(() => {
+      axios.post("https://pollify-backend.herokuapp.com/api/poll", object).then(() => {
         history.push(`/poll/${theUUID}`)
       })
     }else{
