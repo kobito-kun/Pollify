@@ -36,7 +36,7 @@ To run this project locally, you'll need some prerequisites programs.
 
 #### Backend Setup
 
-After cloning this repository & have the required programs installed. Open a command prompt on the folder and run:
+After cloning this repository & have the required programs installed. Open a command prompt on the folder `/backend` and run:
 
 ```
 npm install
@@ -54,7 +54,7 @@ Which will start a local http server at [`http://127.0.0.1:5000/`](http://127.0.
 
 #### Frontend Setup
 
-After cloning this repository & have the required programs installed. Open a command prompt on the folder and run:
+After cloning this repository & have the required programs installed. Open a command prompt on the folder `/frontend` and run:
 
 ```
 npm install
@@ -68,7 +68,7 @@ After all the above is done. Run
 npm start
 ```
 
-Which will start a local http server at [`http://127.0.0.1:5000/`](http://127.0.0.1:5000/). Done! You have this project running locally on your network!
+Which will start a local http server at [`http://127.0.0.1:8000/`](http://127.0.0.1:8000/). Done! You have this project running locally on your network!
 
 ## SQL Schema
 
