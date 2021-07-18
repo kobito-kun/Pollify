@@ -58,7 +58,7 @@ function Home({match}) {
   }
 
   return (
-    <div className="w-full lg:min-h-screen h-auto grid lg:grid-cols-2">
+    <div className="w-full min-h-screen grid lg:grid-cols-2">
       <Slide bottom duration={1000}>
         <div className="flex justify-center items-center flex-col p-10">
           <div className="flex">
@@ -80,7 +80,7 @@ function Home({match}) {
           <KobiBottom />
         </div>
       </Slide>
-      <div className="bg-gradient-to-br from-blue-500 to-blue-700 lg:h-auto flex items-center justify-center p-10">
+      <div className="bg-gradient-to-br from-blue-500 to-blue-700 h-full lg:h-auto flex items-center justify-center p-10">
         <Slide top duration={1000}>
           <div className="w-3/4">
             <img src={SVGHome} alt="SVG ImageO" />
